@@ -1,0 +1,14 @@
+name: snk  # 环境的名称
+
+dependencies:
+  - python=3.9  # 安装特定版本的 Python
+  - trim_galore
+  - bwa 
+  - samtools
+  - bedtools
+  - picard
+  - bamutil
+  - astair
+
+
+

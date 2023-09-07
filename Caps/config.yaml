@@ -1,0 +1,18 @@
+fq_in_path: "data/fastq"
+trim_out_path: "data/trimmed"
+
+
+
+maskRegion: "ref/mm9-blacklist.bed.gz"
+lam_ref: "ref/lam_mc.fa"
+lam_bed: "ref/lam_mc.bed"
+ref_genome: "/data/wangzc/cgs/bwa/new_mm9_lam_mc.fa"
+ref_fa: "/data/wangzc/cgs/new_mm9_lam_mc.fa"
+chrs.bed: "ref/chrs.bed"
+
+
+
+CHRs: ["chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chrX","chrY"]
+MAPQ: "10"
+
+sampleList: ["1w"]

@@ -1,0 +1,263 @@
+configfile: "config.yaml"
+
+from os.path import join
+from os.path import exists
+
+rule all: 
+    input:
+        expand("data/bam/{sample}_sorted.bam",
+            sample=config["sampleList"]),
+        expand("data/dedup/{sample}_dedup.bam",
+            sample=config["sampleList"]),
+        expand("astair_output/spike_in/{sample}_sorted_spikein_clipOverlap_mCtoT_CpG.mods.gz",
+            sample=config["sampleList"]),
+        expand("astair_output/spike_in/{sample}_sorted_spikein_clipOverlap_mCtoT_all.mods.gz",
+            sample=config["sampleList"]),
+        expand("astair_output/mm9/{sample}_dedup_chrselected.clipOverlap_mCtoT_CpG.mods.gz",
+            sample=config["sampleList"]),
+        expand("qc/mapping_rate/{sample}_mapping_rate_report.txt",
+            sample=config["sampleList"])
+rule trim_galore_pe: 
+    input:
+        expand("{fq_in_path}/{{sample}}_{readDirection}.fq.gz",
+            fq_in_path=config["fq_in_path"],
+            readDirection=['1','2'])
+    output:
+        temp(expand("{trim_out_path}/{{sample}}_{readDirection}_val_{readDirection}.fq.gz",
+            trim_out_path=config["trim_out_path"],
+            readDirection=['1','2']))
+    log:
+        "logs/trim_galore/{sample}.log"
+    params:
+        out_path=config['trim_out_path'],
+    conda:
+        'snk',
+    threads: 20
+    shell:
+        """
+        (trim_galore --clip_R1 10 --clip_R2 10 \
+        --gzip -o {params.out_path} --paired {input}) 2> {log}
+        """
+
+rule bwa_map: 
+    input:
+        config["ref_genome"], # reference genome
+        expand("{trim_out_path}/{{sample}}_{readDirection}_val_{readDirection}.fq.gz",
+            trim_out_path=config["trim_out_path"],
+            readDirection=['1','2'])
+    output:
+        "data/bam/{sample}_sorted.bam"
+    log:
+        "logs/bwa_mem/{sample}.log"
+    threads: 10
+    params:
+        "-c 500 -U 17"   #bwa mem 默认参数,可省略
+    shell:
+        """
+        (bwa mem -t {threads} {params} {input} | \
+        samtools sort -@ {threads} -T data/bam/{wildcards.sample} - > {output}) 2> {log}
+        """
+rule mark_duplicate: 
+    input:
+        "data/bam/{sample}_sorted.bam"
+    output:
+        bam="data/dedup/{sample}_dedup.bam",
+        metrics="data/dedup/{sample}_dedup_metrics.txt"
+    log:
+        "logs/picard/dedup/{sample}.log"
+    threads: 10
+    params:
+        "REMOVE_DUPLICATES=true"
+    conda:
+        'snk',
+    shell:
+        """
+        (java -jar /data/biosoft/software/picard.jar MarkDuplicates {params} INPUT={input} \
+        OUTPUT={output.bam}   \
+        METRICS_FILE={output.metrics}  ASSUME_SORT_ORDER=coordinate \
+        TMP_DIR=tmp) 2> {log}
+        """
+
+
+rule process_spikein_bam:
+    input:
+        bed=config["lam_bed"],
+        bam="data/bam/{sample}_sorted.bam"
+    output:
+        bam="data/bam/{sample}_sorted_spikein_clipOverlap.bam",
+        bai="data/bam/{sample}_sorted_spikein_clipOverlap.bam.bai"
+    log:
+        "logs/clipOverlap/{sample}_sorted_spikein.log"
+    threads: 8
+    conda:
+        'snk',
+    shell:
+        """
+        samtools view -@ 4 -L {input.bed} -o data/bam/{wildcards.sample}_sorted_spikein.bam {input.bam}
+        (bam clipOverlap --in data/bam/{wildcards.sample}_sorted_spikein.bam \
+        --out {output.bam} --stats ) 2> {log}
+        samtools index {output.bam}
+        """
+
+rule astair_call_CpG_spikein: 
+    input:
+        bam="data/bam/{sample}_sorted_spikein_clipOverlap.bam",
+        bai="data/bam/{sample}_sorted_spikein_clipOverlap.bam.bai",    
+        ref=config["lam_ref"]
+    output:
+        "astair_output/spike_in/{sample}_sorted_spikein_clipOverlap_mCtoT_CpG.mods.gz"
+    log:
+        "logs/astair/call/{sample}_sorted_spikein_clipOverlap_mCtoT_all_spikein.log"
+    params:
+        mq=config["MAPQ"],
+        context="CpG",
+        outdir="astair_output/spike_in"
+    threads: 4
+    conda:
+        'snk',
+    shell:
+        """
+        (astair call -sc True \
+        -i {input.bam} -f {input.ref} \
+        -mq {params.mq} \
+        -t {threads} -m mCtoT \
+        --context {params.context} --gz \
+        -d {params.outdir}) 2> {log}
+        """
+
+rule astair_call_all_spikein: 
+    input:
+        bam="data/bam/{sample}_sorted_spikein_clipOverlap.bam",
+        bai="data/bam/{sample}_sorted_spikein_clipOverlap.bam.bai",    
+        ref=config["lam_ref"]
+    output:
+        "astair_output/spike_in/{sample}_sorted_spikein_clipOverlap_mCtoT_all.mods.gz"
+    log:
+        "logs/astair/call/{sample}_sorted_spikein_clipOverlap_mCtoT_all_spikein.log"
+    params:
+        mq=config["MAPQ"],
+        context="all",
+        outdir="astair_output/spike_in"
+    threads: 4
+    conda:
+        'snk',
+    shell:
+        """
+        (astair call -sc True \
+        -i {input.bam} -f {input.ref} \
+        -mq {params.mq} \
+        -t 4 -m mCtoT \
+        --context {params.context} --gz \
+        -d {params.outdir}) 2> {log}
+        """
+rule remove_chrM:
+    input:
+        bam="data/dedup/{sample}_dedup.bam",
+        bed=config["chrs.bed"]
+    output:
+        "data/dedup/{sample}_dedup_chrselected.bam"
+    threads: 8
+    shell:
+        """
+        samtools view -@ {threads} -L {input.bed} -o {output} {input.bam}
+        """
+rule remove_chrM_fasta:
+    input:
+        fa=config["ref_fa"]
+    output:
+        "ref/mm9_nochrM.fa"
+    params:
+        chrs=config["CHRs"]
+    shell:
+        """
+        for chrom in {params.chrs}; do
+            samtools faidx {input.fa} $chrom >> {output}
+        done
+        """
+
+rule samtools_sort_by_readname:
+    input:
+        "data/dedup/{sample}_dedup_chrselected.bam"
+    output:
+        temp("data/dedup/{sample}_dedup_chrselected_sortbyname.bam")
+    threads: 6
+    shell:
+        """
+        samtools sort -n -@ {threads} -T tmp/{wildcards.sample} \
+        -o {output} {input}
+        """
+
+rule clip_overlap_dedup: ## Due to hitting the max record poolSize, default handled 31893 records.
+    input:
+        "data/dedup/{sample}_dedup_chrselected_sortbyname.bam"
+    output:
+        bam="data/dedup/{sample}_dedup_chrselected.clipOverlap.bam",
+        bai="data/dedup/{sample}_dedup_chrselected.clipOverlap.bam.bai"
+    log:
+        "logs/clipOverlap/{sample}_dedup_chrselected_sortbyname.log"
+    conda:
+        'snk',
+    threads: 6
+    shell:
+        """
+        (bam clipOverlap --readName --in {input} --out - | \
+        samtools sort -@ {threads} -T tmp/{wildcards.sample} -o {output.bam} -O bam - ) 2> {log}
+        samtools index {output.bam}
+        """
+rule astair_call_CpG_mm9: 
+    input:
+        bam="data/dedup/{sample}_dedup_chrselected.clipOverlap.bam",       
+        bai="data/dedup/{sample}_dedup_chrselected.clipOverlap.bam.bai",
+        ref="ref/mm9_nochrM.fa",
+        # vcf=config["vcf"]
+    output:
+        "astair_output/mm9/{sample}_dedup_chrselected.clipOverlap_mCtoT_CpG.mods.gz"
+    log:
+        "logs/astair/call/{sample}_dedup_chrselected_mCtoT_CpG.mods.log"
+    params:
+        mq=config["MAPQ"],
+        context="CpG"
+    threads: 8
+    conda:
+        'snk',
+    shell:
+        """
+        (astair call -sc True \
+        -i {input.bam} -f {input.ref} \
+        -mq {params.mq} \
+        -t 8 -m mCtoT --context {params.context} \
+        --gz -d astair_output/mm9) 2> {log}
+        """
+        # --known_snp {input.vcf}
+
+rule mask_blacklist: 
+    input:
+        bed="astair_output/mm9/{sample}_{description}.mods.gz",
+        blacklist=config["maskRegion"]
+    output:
+        "astair_output/mm9/{sample}_{description}_masked.mods.gz"
+    shell:
+        """
+        bedtools intersectBed -v -a {input.bed} -b {input.blacklist} | gzip > {output}
+        """
+
+rule qc_mapped_reads:
+    input:
+        fq1="data/fastq/{sample}_1.fq.gz",
+        fq2="data/fastq/{sample}_2.fq.gz",
+        mapped="data/bam/{sample}_sorted.bam",
+        dedup="data/dedup/{sample}_dedup.bam"
+    output:
+        "qc/mapping_rate/{sample}_mapping_rate_report.txt"        
+    shell:
+        """
+        echo 'raw reads' > {output}
+        echo $(zcat {input.fq1}|wc -l)/4|bc >> {output}
+        echo $(zcat {input.fq2}|wc -l)/4|bc >> {output}
+        echo 'all reads in bam' >> {output}
+        samtools view {input.mapped} | cut -f 1 | sort | uniq | wc -l >> {output}
+        echo 'mapped reads (MAPQ 10)' >> {output}
+        samtools view -h -F 0x4 -q 10 {input.mapped} | samtools view -F 0x8 | cut -f 1 | sort | uniq | wc -l >> {output}
+        echo 'mapped and deduplicated reads (MAPQ 10)' >> {output}
+        samtools view -h -F 0x4 -q 10 {input.dedup} | samtools view -F 0x8 | cut -f 1 | sort | uniq | wc -l >> {output}
+        """
