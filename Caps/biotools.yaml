@@ -6,7 +6,7 @@ dependencies:
   - bwa 
   - samtools
   - bedtools
-  - picard
+  - picard  #当出现bug时，使用java -jar picard.jar
   - bamutil
   - astair
 
