@@ -73,7 +73,7 @@ rule mark_duplicate:
     shell:
         """
         (picard MarkDuplicates {params} INPUT={input} \
-        OUTPUT={output.bam} \
+        OUTPUT={output.bam}   \
         METRICS_FILE={output.metrics}  ASSUME_SORT_ORDER=coordinate \
         TMP_DIR=tmp) 2> {log}
         """
@@ -238,8 +238,7 @@ rule mask_blacklist:
         "astair_output/mm9/{sample}_{description}_masked.mods.gz"
     shell:
         """
-        module load bedtools/2.25.0
-        intersectBed -v -a {input.bed} -b {input.blacklist} | gzip > {output}
+        bedtools intersectBed -v -a {input.bed} -b {input.blacklist} | gzip > {output}
         """
 
 rule qc_mapped_reads:
