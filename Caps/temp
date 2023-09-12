@@ -1,1 +1,2 @@
-1
+# 注意11.py和snakefile，的差别在于paicard的调用方式不同，这个java软件的使用条件上较为苛刻
+# 执行命令   snakemake --snakefile 11.py -c 20 --use-conda --conda-frontend conda
