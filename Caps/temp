@@ -1,3 +1,21 @@
-# 注意11.py和snakefile，的差别在于paicard的调用方式不同，这个java软件的使用条件上较为苛刻
+# 注意11.py和snakefile，的差别在于picard的调用方式不同，这个java软件的使用条件上较为苛刻
 # 执行命令   snakemake --snakefile 11.py -c 20 --use-conda --conda-frontend conda
 # ref_genome和ref_fa，对应的fa文件是同一个，但是作用不同，bwa的fa没有相应的fai，ref_fa是有的
+
+
+#流程
+1.trim使用trim_galore 
+2.bwa mem对trim后的fq进行比对
+3.REMOVE_DUPLICATES使用picard   #可以注意到，这里是比对后去重
+4.获取标品的bam
+5.astair_call_CpG_spikein
+6.astair_call_all_spikein
+7.准备处理mm9，先去除bam文件中的chrm （当然对于标品也去除了，反过来说chr1~chrY）
+8.去除ref中的chrm （当然对于标品也去除了，反过来说chr1~chrY）  （这里解释一下，这两部是连续的，第一步利用bed信息截取chr1-chry的bam，第二步ref利用列表截取chr1-chry）
+9.对7截取的bam问进行排序通过samtools
+10.bam clipOverlap双端数据去除overlap
+11.astair_call_CpG_mm9
+12. #snv区域直接删除  这里展示不执行，没有先验数据
+13.qc_mapped_reads
+
+总结一下，这里比较细节的处理是，1去重，2.截取chr1-y，3.去除双端overlap
