@@ -6,8 +6,8 @@ trim_out_path: "data/trimmed"
 maskRegion: "ref/mm9-blacklist.bed.gz"
 lam_ref: "ref/lam_mc.fa"
 lam_bed: "ref/lam_mc.bed"
-ref_genome: "/data/wangzc/cgs/bwa/new_mm9_lam_mc.fa"
-ref_fa: "/data/wangzc/cgs/new_mm9_lam_mc.fa"
+ref_genome: "/home/index/wangzc/cgs/bwa/new_mm9_lam_mc.fa"
+ref_fa: "/home/index/wangzc/cgs/new_mm9_lam_mc.fa"
 chrs.bed: "ref/chrs.bed"
 
 
