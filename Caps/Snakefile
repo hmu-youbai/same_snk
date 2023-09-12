@@ -35,7 +35,7 @@ rule trim_galore_pe:
     threads: 20
     shell:
         """
-        (trim_galore --clip_R1 10 --clip_R2 10 \
+        (trim_galore --clip_R1 10 --clip_R2 10 --cores {threads} \
         --gzip -o {params.out_path} --paired {input}) 2> {log}
         """
 
