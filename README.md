@@ -11,7 +11,7 @@
 1. 克隆这个仓库到你的本地机器上。
 2. 阅读 `spellbook.md` 文件，里面包含了所有我们教授的咒语。
 
-## 🌟 魔法咒语示例
+## 🌟 八奇技示例
 
 - `qigong_forge()`: 炁体源流
 - `bind_spirits()`: 拘灵遣将
@@ -31,7 +31,7 @@
 
 ## 🎓 毕业要求
 
-你将需要成功完成所有课程，并通过最终考试，才能毕业并获得魔法师学院的毕业证书。
+你将需要成功完成所有课程，并通过最终考试，才能毕业并获得异人学院的毕业证书。
 
 ## 🪄 特别鸣谢
 
@@ -41,8 +41,8 @@
 
 ## 📞 联系我们
 
-如果你有任何关于学院的疑问或建议，请随时联系我们的院长。
+如果你有任何关于学院的疑问或建议，请随时联系我们的张之维院长。
 
-![魔法师](https://example.com/wizard.png)
+![魔法师]([https://example.com/wizard.png](https://ts1.cn.mm.bing.net/th/id/R-C.926929b93fff71bfaab681d15de1c927?rik=nnIBoovyMl2rkw&riu=http%3a%2f%2fi2.hdslb.com%2fbfs%2farchive%2f07b3c66312d67aaa494e96a0fca36acb8d5634cd.jpg&ehk=wxnSQ9Uc%2fFzFDAmqV58qlt2aKLyq2%2fv%2fPC5wFrAdueg%3d&risl=&pid=ImgRaw&r=0)https://ts1.cn.mm.bing.net/th/id/R-C.926929b93fff71bfaab681d15de1c927?rik=nnIBoovyMl2rkw&riu=http%3a%2f%2fi2.hdslb.com%2fbfs%2farchive%2f07b3c66312d67aaa494e96a0fca36acb8d5634cd.jpg&ehk=wxnSQ9Uc%2fFzFDAmqV58qlt2aKLyq2%2fv%2fPC5wFrAdueg%3d&risl=&pid=ImgRaw&r=0)
 
 让我们一起探索古老魔法的奥秘吧！🔮📜
