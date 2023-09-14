@@ -1,0 +1,221 @@
+configfile: "config.yaml"
+
+from os.path import join
+from os.path import exists
+
+rule all: 
+    input:
+        expand("data/bam/{sample}_1.sam",
+            sample=config["sampleList"]),
+        expand("data/bam/{sample}_2.sam",
+            sample=config["sampleList"]),
+        expand("data/merge_fq300/{sample}_300.fq",
+            sample=config["sampleList"]),
+        expand("data/get_pair/{sample}_30.name",
+            sample=config["sampleList"]),
+        expand("data/get_pair/{sample}_70.name",
+            sample=config["sampleList"]),
+        expand("data/get_pair/{sample}_110.name",
+            sample=config["sampleList"]),
+        expand("data/get_pair/{sample}_150.name",
+            sample=config["sampleList"]),
+        expand("data/get_pair/{sample}_190.name",
+            sample=config["sampleList"]),
+        expand("data/get_pair/{sample}_230.name",
+            sample=config["sampleList"]),
+
+
+        
+
+
+rule cut_fq1: 
+    input:
+        expand("{fq_in_path}/{{sample}}_1.fq.gz",
+            fq_in_path=config["fq_in_path"])
+    output:
+        temp(expand("{trim_out_path}/{{sample}}_1_cut_1.fq",
+            trim_out_path=config['trim_out_path']))
+    threads: 1        
+    shell:
+        """
+        seqtk trimfq -b 30 {input} > {output}
+        """
+
+rule cut_fq2:       
+    input:
+        expand("{fq_in_path}/{{sample}}_2.fq.gz",
+            fq_in_path=config["fq_in_path"])
+    output:
+        temp(expand("{trim_out_path}/{{sample}}_2_cut_2.fq",
+            trim_out_path= config['trim_out_path']))
+    threads: 1
+    shell:
+        """
+        seqtk trimfq -b 30 {input} > {output}
+        """
+
+
+rule bowtie2_map1: 
+    input:
+        expand("{trim_out_path}/{{sample}}_1_cut_1.fq",
+            trim_out_path=config["trim_out_path"])
+    output:
+        "data/bam/{sample}_1.sam"
+    log:
+        "logs/bowtie2/{sample}_1.log"
+    threads: 20
+    params:
+        bowtie2_ref=config["ref_genome"]
+    shell:
+        """
+        (bowtie2 -x {params.bowtie2_ref} -U {input} -p {threads} -S {output}) 2>{log}
+        """
+rule bowtie2_map2:
+    input:
+        expand("{trim_out_path}/{{sample}}_2_cut_2.fq",
+            trim_out_path=config["trim_out_path"])
+    output:
+        "data/bam/{sample}_2.sam"
+    log:
+        "logs/bowtie2/{sample}_2.log"
+    threads: 20
+    params:
+        bowtie2_ref=config["ref_genome"]
+    shell:
+        """
+        (bowtie2 -x {params.bowtie2_ref} -U {input} -p {threads} -S {output}) 2>{log}
+        """
+
+
+rule python_for_pre_pair300:
+    input:
+        fq1=expand("{fq_in_path}/{{sample}}_1.fq.gz",
+            fq_in_path=config["fq_in_path"]),
+        fq2=expand("{fq_in_path}/{{sample}}_2.fq.gz",
+            fq_in_path=config["fq_in_path"]),
+        sam1="data/bam/{sample}_1.sam",
+        sam2="data/bam/{sample}_2.sam",
+    output:
+        "data/merge_fq300/{sample}_300.fq"
+    threads: 5
+    params:
+        get_pair300_py=config["get_pair300_py"]
+    shell:
+        """
+        python3 {params.get_pair300_py} {input.fq1} {input.fq2} {input.sam1} {input.sam2} {output}
+        """
+
+
+rule python_split_mc_c:
+    input:
+        "data/merge_fq300/{sample}_300.fq"
+    output:
+        mc_fq="data/merge_fq300/{sample}_mc.fq",
+        c_fq="data/merge_fq300/{sample}_c.fq"
+    params:
+        get_split_py=config["get_split_py"]
+    threads: 5
+    shell:
+        """
+        python3 {params.get_split_py} {input} {output.mc_fq} {output.c_fq}
+        """
+
+# max mistake 5
+rule python_get_pair_start_30: 
+    input:
+        mc_fq="data/merge_fq300/{sample}_mc.fq",
+        c_fq="data/merge_fq300/{sample}_c.fq"
+    output:
+        "data/get_pair/{sample}_30.name"
+    log:
+        "logs/get_pair/{sample}_30.log"
+    threads: 20
+    params:
+        get_pair_py=config["get_pair_py"]
+
+    shell:
+        """
+        (python3 {params.get_pair_py} {input.mc_fq} {input.c_fq} {output} 30 --dis 6 --windows 40) &> {log}
+        """
+rule python_get_pair_start_70:
+    input:
+        mc_fq="data/merge_fq300/{sample}_mc.fq",
+        c_fq="data/merge_fq300/{sample}_c.fq"
+    output:
+        "data/get_pair/{sample}_70.name"
+    log:
+        "logs/get_pair/{sample}_70.log"
+    threads: 20
+    params:
+        get_pair_py=config["get_pair_py"]
+
+    shell:
+        """
+        (python3 {params.get_pair_py} {input.mc_fq} {input.c_fq} {output} 70 --dis 6 --windows 40) &> {log}
+        """
+
+rule python_get_pair_start_110:
+    input:
+        mc_fq="data/merge_fq300/{sample}_mc.fq",
+        c_fq="data/merge_fq300/{sample}_c.fq"
+    output:
+        "data/get_pair/{sample}_110.name"
+    log:
+        "logs/get_pair/{sample}_110.log"
+    threads: 20
+    params:
+        get_pair_py=config["get_pair_py"]
+
+    shell:
+        """
+        (python3 {params.get_pair_py} {input.mc_fq} {input.c_fq} {output} 110 --dis 6 --windows 40) &> {log}
+        """
+rule python_get_pair_start_150:
+    input:
+        mc_fq="data/merge_fq300/{sample}_mc.fq",
+        c_fq="data/merge_fq300/{sample}_c.fq"
+    output:
+        "data/get_pair/{sample}_150.name"
+    log:
+        "logs/get_pair/{sample}_150.log"
+    threads: 20
+    params:
+        get_pair_py=config["get_pair_py"]
+
+    shell:
+        """
+        (python3 {params.get_pair_py} {input.mc_fq} {input.c_fq} {output} 150 --dis 6 --windows 40) &> {log}
+        """
+rule python_get_pair_start_190:
+    input:
+        mc_fq="data/merge_fq300/{sample}_mc.fq",
+        c_fq="data/merge_fq300/{sample}_c.fq"
+    output:
+        "data/get_pair/{sample}_190.name"
+    log:
+        "logs/get_pair/{sample}_190.log"
+    threads: 20
+    params:
+        get_pair_py=config["get_pair_py"]
+
+    shell:
+        """
+        (python3 {params.get_pair_py} {input.mc_fq} {input.c_fq} {output} 190 --dis 6 --windows 40) &> {log}
+        """
+rule python_get_pair_start_230:
+    input:
+        mc_fq="data/merge_fq300/{sample}_mc.fq",
+        c_fq="data/merge_fq300/{sample}_c.fq"
+    output:
+        "data/get_pair/{sample}_230.name"
+    log:
+        "logs/get_pair/{sample}_230.log"
+    threads: 20
+    params:
+        get_pair_py=config["get_pair_py"]
+
+    shell:
+        """
+        (python3 {params.get_pair_py} {input.mc_fq} {input.c_fq} {output} 230 --dis 6 --windows 40) &> {log}
+        """
+
