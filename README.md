@@ -43,6 +43,6 @@
 
 如果你有任何关于学院的疑问或建议，请随时联系我们的张之维院长。
 
-![魔法师]([https://example.com/wizard.png](https://ts1.cn.mm.bing.net/th/id/R-C.926929b93fff71bfaab681d15de1c927?rik=nnIBoovyMl2rkw&riu=http%3a%2f%2fi2.hdslb.com%2fbfs%2farchive%2f07b3c66312d67aaa494e96a0fca36acb8d5634cd.jpg&ehk=wxnSQ9Uc%2fFzFDAmqV58qlt2aKLyq2%2fv%2fPC5wFrAdueg%3d&risl=&pid=ImgRaw&r=0)https://ts1.cn.mm.bing.net/th/id/R-C.926929b93fff71bfaab681d15de1c927?rik=nnIBoovyMl2rkw&riu=http%3a%2f%2fi2.hdslb.com%2fbfs%2farchive%2f07b3c66312d67aaa494e96a0fca36acb8d5634cd.jpg&ehk=wxnSQ9Uc%2fFzFDAmqV58qlt2aKLyq2%2fv%2fPC5wFrAdueg%3d&risl=&pid=ImgRaw&r=0)
+![魔法师](https://img1.imgtp.com/2023/09/14/BiLNOXvV.jpg)
 
 让我们一起探索古老魔法的奥秘吧！🔮📜
