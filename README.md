@@ -1,26 +1,26 @@
-# 🎩 魔法师学院 🧙‍♂️
+# 🎩 异人学院 🧙‍♂️
 
-欢迎来到魔法师学院 - 一个让你学习和掌握古老的魔法技艺的项目！
+欢迎来到异人学院 - 一个让你学习和掌握炁体功法的项目！
 
 ## 📜 课程简介
 
-这个项目的目标是让你成为一名真正的魔法师，掌握古老的炁体源流、拘灵遣将、通天箓、风后奇门、神机百炼、六库仙贼、双全手、大罗洞观等技艺。
+这个项目的目标是让你成为异人界的绝顶，掌握八奇迹，雷法，逆生三重等技艺。
 
 ## 🧙‍♀️ 如何开始
 
 1. 克隆这个仓库到你的本地机器上。
-2. 阅读 `spellbook.md` 文件，里面包含了所有我们教授的古老魔法咒语。
+2. 阅读 `spellbook.md` 文件，里面包含了所有我们教授的咒语。
 
 ## 🌟 魔法咒语示例
 
-- `qigong_forge()`: 炁体源流技巧
-- `bind_spirits()`: 拘灵遣将术
-- `open_heavenly_scroll()`: 通天箓开启法
-- `wind_after_gates()`: 风后奇门阵
-- `forge_divine_machinery()`: 神机百炼术
-- `steal_from_repositories()`: 六库仙贼窍门
-- `dual_omnipotence()`: 双全手奥妙
-- `attune_to_great_luo()`: 大罗洞观术
+- `qigong_forge()`: 炁体源流
+- `bind_spirits()`: 拘灵遣将
+- `open_heavenly_scroll()`: 通天箓
+- `wind_after_gates()`: 风后奇门
+- `forge_divine_machinery()`: 神机百炼
+- `steal_from_repositories()`: 六库仙贼
+- `dual_omnipotence()`: 双全手
+- `attune_to_great_luo()`: 大罗洞观
 
 ## 📚 课程安排
 
