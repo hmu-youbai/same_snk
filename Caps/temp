@@ -1,5 +1,5 @@
 # 注意11.py和snakefile，的差别在于picard的调用方式不同，这个java软件的使用条件上较为苛刻，snakefile对应安装成功的版本
-# 执行命令   snakemake --snakefile 11.py -c 20 --use-conda --conda-frontend conda
+# 执行命令   snakemake --snakefile 11.py -c 20 --use-conda --conda-frontend conda  --default-resources "tmpdir='./temp_test'"
 # ref_genome和ref_fa，对应的fa文件是同一个，但是作用不同，bwa的fa没有相应的fai，ref_fa是有的
 
 
