@@ -1,0 +1,124 @@
+# CGS数据全流程
+
+1.hairpin_cut  这里存在两种模式，一种是填充mC，一种是填充C
+------------------------------------------------#align 算法---------------------------------------
+尽管这里填充mC的实验几乎不再做了，但仍然作为对比保留
+这里不需要预先trim，因为cut的原理=3`端的trim
+原理：全局比对，参数：open_gap_score：-3 ，extend_gap_score：-2，mismatch：0，match：1
+特别注意，在默认的PairwiseAligner，插入缺失在同打分的情况下，优先向前，这和尽可能保留茎部分（提高mapping）的原则相反
+额外处理：先反向再比对，结果再反向回来
+------------------------------------------------#还原算法------------------------------------------
+match：+1，other：-10
+这里特别注意，在第一种模式下，GA：-20，这种模式不应该出现在第一种模式里，如果出现1.在磁铁区 2.填充了错误的普通C 3.填充的mC被错误的氧化为U，4.单纯的错误读数
+无论是哪一种情况，都可以作为一个合格的潜在断点，在不是极端严格的情况下，-20是合理的
+注意，最终结果返回的result_seq，不会额外的修正（TC-C,GA-G除外），如果需要修正在后续函数完成
+
+-----------------------------------------------#trim overlap&预纠正&多进程-----------------------
+trim overlap由汉明距离确定（加速目的），要求大于5或完全互补长度大于80%
+纠正过程中，较为宽松，除了-（indel)和1T/2A,不进行校正，其余的取质量值较大的一个（等于/小于不校正，保持N）
+这里存在一个bug，校正的操作对于mC填充模式不太公平，C模式校正了GG(几乎没有，除非假阴),CC(AA,GA,TT,TC不校正),  对于mC模式同样，但事实应该GG（大量）,CC,AA（大量）(TT,TC不校正),这里没有校正AA
+1015更新，加一个判断，解决这个bug，这个优化是正优化还是负优化，有待整理老数据的时候测试
+
+2.执行bwa mem单端比对，并且结果为sort.bam和sort.bam.bai
+
+3.bam文件去重
+尽管picard MarkDuplicates REMOVE_DUPLICATES=true 同样可以去重，但是去重过程没有选择性（至少应该选择更长质量更好的一条）
+--------------------------------------------------#自定义bam去重算法------------------------------
+原理：将同染色体同起点的read定义在一个字典，在每个字典内按照单碱基最高打分排序，依次执行编辑距离比较，阈值>5为新代表统计最终结果
+
+
+4.整体提取hmc
+--------------------------------------------------#提取hmc算法------------------------------
+ref_base == "c" and seq[query_pos] == "T"，ref_base == "g" and seq[query_pos] == "A":  hmc
+ref_base == "C" and seq[query_pos] == "C"，ref_base == "G" and seq[query_pos] == "G" C
+这里和后面都采用按染色体多进程，更稳定，但是速度略微慢一些，同时建议保留原版（更快，输出结果一致的python代码）
+这里缺少了ref为c，seq为AGN这样SNP的情况
+
+5.整体提取mc
+--------------------------------------------------#提取mc算法------------------------------
+elif seq[query_pos] == "C" and cut_seq[query_pos] == "C" and dd[read.reference_name][ref_pos] == "C"
+elif seq[query_pos] == "G" and cut_seq[query_pos] == "G" and dd[read.reference_name][ref_pos] == "G"
+mC,                   这里取ref_base == "C"同样可以
+(seq[query_pos] == "C" and ref_base == "C") or (seq[query_pos] == "T" and ref_base == "c")
+C,                     这里左侧条件，ref与seq为C，seq1不为C，右侧条件为ref为c，seq1为C，seq为T
+
+--------------------------------------------------#C位点的记录原则--------------------------
+当ref为C时，seq为C是甲基化位点，seq为T是普通C位点，当seq为AGN时不计入bed文件
+具体来说：
+mc提取过程中：
+seq=C,cut_seq=C,ref=C为mC,                                    seq=C,ref=C,cut_seq!=C,(可以为N吗)   (seq[query_pos] == "T" and ref_base == "c")   普通C记入
+这里cut_seq!=C指定为T是更严格的版本，但是从逻辑上讲，cut_seq!=C但是seq表现为C,可能的原因1：cut_seq为T,可能的原因2：cut_seq为other，校正之后seq=C
+这里的主要问题是校正后为C，（基于read2校正）但是read1不是T(AGN),这种是否应该记入，我觉得不应该记入，毕竟seq为N同样没有记入,但是为了统一hmc和mc的情况，这里记入
+#1016重要注释，校正会导致模糊的C/mC位点，这里对于校正的位点记入C
+
+
+6.抽取标品hmc.bed    抽取标品mc.bed
+7.抽取no_chrm_spikein.hmc.bed      抽取no_chrm_spikein.hmc.bed
+
+
+8.获取cover信息  
+qualimap bamqc -bam {input} -outdir {wildcards.sample} -outformat PDF:HTML -nt {params.threads} --java-mem-size={params.java_mem_size}
+# 这里qualimap 可以作为额外统计，作为cover不够优秀
+
+/data/wangzc/soft/BAMStats-1.25/BAMStats-1.25.jar
+java -jar -Xmx100g {args.BAMStats} -m -i {args.output}.sort -o {args.output}.BAMStats --view simple
+
+-----------------------------------------------#整理一下输出文件的位置
+原始文件位置：/data/fastq/
+cut后的3个fq文件：/data/trimmed/
+bwa mem比对后的bam/bai：/data/bam
+去重后的bam/bai：/data/dedup/
+提取hmc：/data/hmc/
+提取mc：/data/mc/
+qualimap_bamqc获取cover：/data/cover/
+
+提取标品：/spikein/hmc/    /spikein/mc/ 
+提取mm9：/hairpin_results/hmc/    /hairpin_results/mc/ 
+
+
+
+11.获取全局log信息
+------------------------------------#需要统计的log信息----------------------------------------------
+1.fq1,fq2 name    min_read_length                                                                                  #这些内容直接获取                        
+2.input_reads resolved_reads resolved ratio                                                                   #tail -n 4 CGS-P0.log
+3.Mean length Median length Standard deviation Most common length Most common length percentage      python命令
+4.比对率                                                                                                                            #samtools flagstat CGS-P0_sorted.bam |head -n 5|tail -n 1
+
+4.5去重效率
+
+
+5.基因组覆盖度 平均测序深度   | 标品以此的cover depth                                             cover脚本从两个结果获取                
+6.基因组的hmc水平，基因组的mc水平                                                                    
+7.标品的阳性率，假阴性率
+
+
+脚本原理
+cover:                                          grep "coverageData >= 1X" data/cover/CGS-ES/genome_results.txt
+depth:                                         grep "mean coverageData" data/cover/CGS-ES/genome_results.txt
+标品1的cover           value1=$(awk 'BEGIN { isCoverage = 0; } /^Coverage$/ { isCoverage = 1; next; } /^Coverage \(mapped regions only\)$/ { exit; } isCoverage == 1 && $1 == "lambda" { gsub(/,/, "", $2); print $2; exit; }' CGS-ES.BAMStats)
+                               value2=$(awk '/^Coverage \(mapped regions only\)$/ { isMappedCoverage = 1; next; } isMappedCoverage == 1 && $1 == "lambda" { gsub(/,/, "", $2); print $2; exit; }' CGS-ES.BAMStats)
+                                  echo "scale=10; $value2 / $value1" | bc
+标品1的depth                                awk '$1 == "mc" { print $3; exit; }' genome_results.txt  /  awk '$1 == "mc" { print $2; exit; }' genome_results.txt 
+
+
+最后两项内容比较杂，设计一个单独的函数执行
+
+
+
+额外内容：
+尝试统计环区，磁铁的分布情况
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
