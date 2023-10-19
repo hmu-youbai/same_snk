@@ -115,7 +115,7 @@ def final_bed(hmc_bed):
         # 将处理结果写入输出文件
         for key, counts in my_bed.items():
             chrom, start, hmc_type = key
-            meth_ratio = counts[0] / (counts[0] + counts[1]) * 100
+            meth_ratio = counts[0] / (counts[0] + counts[1]) 
             meth_counts = counts[0]
             unmeth_counts = counts[1]
             fout.write(f"{chrom}\t{start}\t{start}\t{meth_ratio:.2f}\t{meth_counts}\t{unmeth_counts}\t{hmc_type}\n")
