@@ -129,7 +129,7 @@ def final_bed(hmc_bed):
             meth_ratio = counts[0] / (counts[0] + counts[1]) 
             meth_counts = counts[0]
             unmeth_counts = counts[1]
-            fout.write(f"{chrom}\t{start}\t{start}\t{meth_ratio:.2f}\t{meth_counts}\t{unmeth_counts}\t{hmc_type}\n")
+            fout.write(f"{chrom}\t{start}\t{start}\t{meth_ratio:.4f}\t{meth_counts}\t{unmeth_counts}\t{hmc_type}\n")
 
 
 def split_sam_file(chr,sam_file):

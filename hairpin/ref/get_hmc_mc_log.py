@@ -118,10 +118,10 @@ def calculate_statistics(file_path,aaa,bbb,ccc,mode,spikein):
                     sp_dir[columns[0]]=sp_dir[columns[0]] + np.array([0.0,0.0,0.0,0.0,float(columns[3]),1])
 
 
-    avg_cpg = cpg_sum4 / cpg_cnt if cpg_cnt != 0 else 0
-    avg_chg = chg_sum4 / chg_cnt if chg_cnt != 0 else 0
-    avg_chh = chh_sum4 / chh_cnt if chh_cnt != 0 else 0
-    avg_cn = cn_sum4 / cn_cnt if cn_cnt != 0 else 0
+    avg_cpg = 100*cpg_sum4 / cpg_cnt if cpg_cnt != 0 else 0
+    avg_chg = 100*chg_sum4 / chg_cnt if chg_cnt != 0 else 0
+    avg_chh = 100*chh_sum4 / chh_cnt if chh_cnt != 0 else 0
+    avg_cn =  100*cn_sum4 / cn_cnt if cn_cnt != 0 else 0
 
     if mode == "hmc":
         cpg = f"CpG hmc平均水平：{round(avg_cpg,2)}% ref总CpG位点：{aaa} 测序覆盖到的CpG位点数：{cpg_cnt} ({round(cpg_cnt*100/aaa, 2)}%) modC总数量：{cpg_sum5} unmodC总数量：{cpg_sum6}"
@@ -131,9 +131,9 @@ def calculate_statistics(file_path,aaa,bbb,ccc,mode,spikein):
 
         result=[cpg,chg,chh,cn]
         for key,value in sp_dir.items():
-            avg_tempcpg = value[0] / value[1] if value[1] != 0 else 0
-            avg_tempchg = value[2] / value[3] if value[3] != 0 else 0
-            avg_tempchh = value[4] / value[5] if value[5] != 0 else 0
+            avg_tempcpg = 100*value[0] / value[1] if value[1] != 0 else 0
+            avg_tempchg = 100*value[2] / value[3] if value[3] != 0 else 0
+            avg_tempchh = 100*value[4] / value[5] if value[5] != 0 else 0
 
             temp = f"hmc位点，{key}标品CpG位点假阳性率：{round(avg_tempcpg, 2)}% CHG位点假阳性率：{round(avg_tempchg, 2)}% CHH位点假阳性率：{round(avg_tempchh, 2)}%"
             result.append(temp)
@@ -143,12 +143,12 @@ def calculate_statistics(file_path,aaa,bbb,ccc,mode,spikein):
         cpg = f"CpG mc平均水平：{round(avg_cpg,2)}% ref总CpG位点：{aaa} 测序覆盖到的CpG位点数：{cpg_cnt} ({round(cpg_cnt * 100 / aaa, 2)}%) modC总数量：{cpg_sum5} unmodC总数量：{cpg_sum6}"
         chg = f"CHG mc平均水平：{round(avg_chg,2)}% ref总CHG位点：{bbb} 测序覆盖到的CHG位点数：{chg_cnt} ({round(chg_cnt * 100 / bbb, 2)}%) modC总数量：{chg_sum5} unmodC总数量：{chg_sum6}"
         chh = f"CHH mc平均水平：{round(avg_chh,2)}% ref总CHH位点：{ccc} 测序覆盖到的CHH位点数：{chh_cnt} ({round(chh_cnt * 100 / ccc, 2)}%) modC总数量：{chh_sum5} unmodC总数量：{chh_sum6}"
-        cn = f"CN mc平均水平：{round(avg_cn,2)}% modC总数量：{cn_sum5}% unmodC总数量：{cn_sum6}%"
+        cn = f"CN mc平均水平：{round(avg_cn,2)}% modC总数量：{cn_sum5} unmodC总数量：{cn_sum6}"
         result = [cpg, chg, chh, cn]
         for key,value in sp_dir.items():
-            avg_tempcpg = value[0] / value[1] if value[1] != 0 else 0
-            avg_tempchg = value[2] / value[3] if value[3] != 0 else 0
-            avg_tempchh = value[4] / value[5] if value[5] != 0 else 0
+            avg_tempcpg = 100*value[0] / value[1] if value[1] != 0 else 0
+            avg_tempchg = 100*value[2] / value[3] if value[3] != 0 else 0
+            avg_tempchh = 100*value[4] / value[5] if value[5] != 0 else 0
 
             temp = f"mc位点，{key}标品CpG位点转化率：{round(100-avg_tempcpg,2)}% CHG位点转化率：{round(100-avg_tempchg,2)}% CHH位点转化率：{round(100-avg_tempchh,2)}%"
             result.append(temp)
