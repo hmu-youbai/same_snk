@@ -1,0 +1,35 @@
+input_bed_path: "data/input_bed"
+trim_out_bed: "data/trim_bed"
+result_bed: "data/result_bed"
+
+
+anno_bed: "ref/mm9_repeatmasker" #bed格式，需要指定chr，start，end，type
+anno_chr: "6"
+anno_start: "7"
+anno_end: "8"
+anno_type: "12"
+anno_trand: "10"
+
+
+ANNOS: ["SINE", "LINE", "LTR", "DNA", "RNA", "Satellite", "Low_complexity", "Simple_repeat"]
+
+
+
+rename_mapping: "tRNA:RNA,rRNA:RNA,snRNA:RNA,scRNA:RNA,srpRNA:RNA" 
+
+
+
+region: ["3UTRs.bed", "5UTRs.bed",  "cds.bed", "exons.bed",  "genes.bed"  ,"introns.bed",  "transcripts.bed"]
+
+
+
+ref_fa: "/data/wangzc/cgs/new_mm9_lam_mc.fa"
+
+
+input_chr: "1"
+input_start: "2"
+input_mod: "5"
+input_unmod: "6"
+
+
+sampleList: ["CGS-E15.5.ref_nochrm.CpG.bed.mc"]
