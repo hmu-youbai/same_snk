@@ -1,0 +1,10 @@
+
+
+SAMPLES: 
+  - "A1"
+  - "A16"
+
+
+
+star_index: "/data/wangzc/cgs/human_star"
+star_gtf: "/data/wangzc/cgs/human/gencode.v44.chr_patch_hapl_scaff.annotation.gtf"
