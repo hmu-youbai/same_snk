@@ -20,7 +20,8 @@ rule run_fastp:
         r2="data/fastq/{sample}_2.fastq.gz"
     output:
         r1_trimmed="data/trim/{sample}_1.trimmed.fastq.gz",
-        r2_trimmed="data/trim/{sample}_2.trimmed.fastq.gz"
+        r2_trimmed="data/trim/{sample}_2.trimmed.fastq.gz",
+        report="data/trim/html/{sample}_fastp_report.html",
     params:
         report="data/trim/html/{sample}_fastp_report.html",
         json="data/trim/json/{sample}_fastp_report.json"
@@ -31,8 +32,7 @@ rule run_fastp:
         "logs/trim/{sample}.log"
     shell:
         """
-        (fastp --in1 {input.r1} --in2 {input.r2} --out1 {output.r1_trimmed} --out2 {output.r2_trimmed} \
-              --html {params.report} --json {params.json} --thread {threads}) 2> {log}
+        (fastp --in1 {input.r1} --in2 {input.r2} --out1 {output.r1_trimmed} --out2 {output.r2_trimmed}  --html {params.report} --json {params.json} --thread {threads}) 2> {log}
         """
 
 # Define the rule to run STAR alignment on each sample
@@ -68,10 +68,9 @@ rule generate_expression_matrix:
     conda:
         'py39'
     log:
-        "log/featureCount/{sample}.log"
+        "logs/featureCount/{sample}.log"
     shell:
         """
         (featureCounts -T 8 -p -t exon -g gene_id -a {params.gtf_file} -o {output.expression_matrix} {input.bam}) 2> {log}
         """
-
 
